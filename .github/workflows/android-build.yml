@@ -1,1 +1,49 @@
-
+name: Build Android APK
+‎
+‎on:
+‎  workflow_dispatch:
+‎
+‎jobs:
+‎  build:
+‎    runs-on: ubuntu-latest
+‎
+‎    steps:
+‎name: Checkout source
+‎        uses: actions/checkout@v4
+‎
+‎name: Generate debug keystore
+‎        run: |
+‎          keytool -genkeypair \
+‎            -v \
+‎            -keystore debug.keystore \
+‎            -storepass android \
+‎            -alias androiddebugkey \
+‎            -keypass android \
+‎            -keyalg RSA \
+‎            -keysize 2048 \
+‎            -validity 10000 \
+‎            -dname "CN=Android Debug,O=Android,C=US"
+‎          cp debug.keystore app/debug.keystore
+‎
+‎name: Setup Java
+‎        uses: actions/setup-java@v4
+‎        with:
+‎          distribution: temurin
+‎          java-version: '17'
+‎
+‎name: Setup Gradle
+‎        uses: gradle/actions/setup-gradle@v6
+‎        with:
+‎          gradle-version: '9.3.1'
+‎
+‎name: Build Debug APK
+‎        run: gradle :app:assembleDebug
+‎
+‎name: Upload APK
+‎        uses: actions/upload-artifact@v4
+‎        with:
+‎          name: Turnament-app
+‎          path: app/build/outputs/apk/debug/*.apk
+‎          if-no-files-found: error
+‎          retention-days: 7
+‎
